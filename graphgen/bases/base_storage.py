@@ -1,5 +1,6 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Union
+from typing import Dict, Generic, List, Set, TypeVar, Union
 
 T = TypeVar("T")
 
@@ -9,100 +10,126 @@ class StorageNameSpace:
     working_dir: str = None
     namespace: str = None
 
-    async def index_done_callback(self):
+    def index_done_callback(self):
         """commit the storage operations after indexing"""
 
-    async def query_done_callback(self):
+    def query_done_callback(self):
         """commit the storage operations after querying"""
 
 
-class BaseListStorage(Generic[T], StorageNameSpace):
-    async def all_items(self) -> list[T]:
-        raise NotImplementedError
-
-    async def get_by_index(self, index: int) -> Union[T, None]:
-        raise NotImplementedError
-
-    async def append(self, data: T):
-        raise NotImplementedError
-
-    async def upsert(self, data: list[T]):
-        raise NotImplementedError
-
-    async def drop(self):
-        raise NotImplementedError
-
-
 class BaseKVStorage(Generic[T], StorageNameSpace):
-    async def all_keys(self) -> list[str]:
+    def all_keys(self) -> list[str]:
         raise NotImplementedError
 
-    async def get_by_id(self, id: str) -> Union[T, None]:
+    def get_by_id(self, id: str) -> Union[T, None]:
         raise NotImplementedError
 
-    async def get_by_ids(
+    def get_by_ids(
         self, ids: list[str], fields: Union[set[str], None] = None
     ) -> list[Union[T, None]]:
         raise NotImplementedError
 
-    async def filter_keys(self, data: list[str]) -> set[str]:
+    def get_all(self) -> dict[str, T]:
+        raise NotImplementedError
+
+    def filter_keys(self, data: list[str]) -> set[str]:
         """return un-exist keys"""
         raise NotImplementedError
 
-    async def upsert(self, data: dict[str, T]):
+    def upsert(self, data: dict[str, T]):
         raise NotImplementedError
 
-    async def drop(self):
+    def drop(self):
+        raise NotImplementedError
+
+    def reload(self):
         raise NotImplementedError
 
 
-class BaseGraphStorage(StorageNameSpace):
-    async def has_node(self, node_id: str) -> bool:
+class BaseGraphStorage(StorageNameSpace, ABC):
+    @abstractmethod
+    def is_directed(self) -> bool:
+        pass
+
+    @abstractmethod
+    def has_node(self, node_id: str) -> bool:
         raise NotImplementedError
 
-    async def has_edge(self, source_node_id: str, target_node_id: str) -> bool:
+    @abstractmethod
+    def has_edge(self, source_node_id: str, target_node_id: str) -> bool:
         raise NotImplementedError
 
-    async def node_degree(self, node_id: str) -> int:
+    @abstractmethod
+    def node_degree(self, node_id: str) -> int:
         raise NotImplementedError
 
-    async def edge_degree(self, src_id: str, tgt_id: str) -> int:
+    @abstractmethod
+    def get_all_node_degrees(self) -> Dict[str, int]:
+        pass
+
+    def get_isolated_nodes(self) -> List[str]:
+        return [
+            node_id
+            for node_id, degree in self.get_all_node_degrees().items()
+            if degree == 0
+        ]
+
+    @abstractmethod
+    def get_node(self, node_id: str) -> Union[dict, None]:
         raise NotImplementedError
 
-    async def get_node(self, node_id: str) -> Union[dict, None]:
+    @abstractmethod
+    def update_node(self, node_id: str, node_data: dict[str, str]):
         raise NotImplementedError
 
-    async def update_node(self, node_id: str, node_data: dict[str, str]):
+    @abstractmethod
+    def get_all_nodes(self) -> Union[list[tuple[str, dict]], None]:
         raise NotImplementedError
 
-    async def get_all_nodes(self) -> Union[list[tuple[str, dict]], None]:
+    @abstractmethod
+    def get_node_count(self) -> int:
+        pass
+
+    @abstractmethod
+    def get_edge(self, source_node_id: str, target_node_id: str) -> Union[dict, None]:
         raise NotImplementedError
 
-    async def get_edge(
-        self, source_node_id: str, target_node_id: str
-    ) -> Union[dict, None]:
-        raise NotImplementedError
-
-    async def update_edge(
+    @abstractmethod
+    def update_edge(
         self, source_node_id: str, target_node_id: str, edge_data: dict[str, str]
     ):
         raise NotImplementedError
 
-    async def get_all_edges(self) -> Union[list[tuple[str, str, dict]], None]:
+    @abstractmethod
+    def get_all_edges(self) -> Union[list[tuple[str, str, dict]], None]:
         raise NotImplementedError
 
-    async def get_node_edges(
-        self, source_node_id: str
-    ) -> Union[list[tuple[str, str]], None]:
+    @abstractmethod
+    def get_edge_count(self) -> int:
+        pass
+
+    @abstractmethod
+    def get_node_edges(self, source_node_id: str) -> Union[list[tuple[str, str]], None]:
         raise NotImplementedError
 
-    async def upsert_node(self, node_id: str, node_data: dict[str, str]):
+    @abstractmethod
+    def upsert_node(self, node_id: str, node_data: dict[str, str]):
         raise NotImplementedError
 
-    async def upsert_edge(
+    @abstractmethod
+    def upsert_edge(
         self, source_node_id: str, target_node_id: str, edge_data: dict[str, str]
     ):
         raise NotImplementedError
 
-    async def delete_node(self, node_id: str):
+    @abstractmethod
+    def delete_node(self, node_id: str):
+        raise NotImplementedError
+
+    @abstractmethod
+    def reload(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_connected_components(self, undirected: bool = True) -> List[Set[str]]:
         raise NotImplementedError

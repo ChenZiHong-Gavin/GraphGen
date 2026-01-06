@@ -1,9 +1,24 @@
-from .build_kg import build_mm_kg, build_text_kg
-from .generate import generate_qas
-from .init import init_llm
-from .judge import judge_statement
-from .partition import partition_kg
-from .quiz import quiz
-from .read import read_files
-from .search import search_all
-from .split import chunk_documents
+from .build_kg import BuildKGService
+from .chunk import ChunkService
+from .evaluate import EvaluateService
+from .extract import ExtractService
+from .generate import GenerateService
+from .judge import JudgeService
+from .partition import PartitionService
+from .quiz import QuizService
+from .read import read
+from .search import SearchService
+
+
+operators = {
+    "read": read,
+    "chunk": ChunkService,
+    "build_kg": BuildKGService,
+    "quiz": QuizService,
+    "judge": JudgeService,
+    "extract": ExtractService,
+    "search": SearchService,
+    "partition": PartitionService,
+    "generate": GenerateService,
+    "evaluate": EvaluateService,
+}

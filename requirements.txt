@@ -12,17 +12,33 @@ nltk
 jieba
 plotly
 pandas
-gradio>=5.44.1
+gradio==5.44.1
 kaleido
 pyyaml
 langcodes
 requests
 fastapi
 trafilatura
+aiohttp
+socksio
+pydantic
+ray==2.52.1
+pyarrow
 
 leidenalg
 igraph
 python-louvain
+
+# storage
+rocksdict
+kuzu
+
+# KG
+rdflib
+scipy
+
+# Bioinformatics
+biopython
 
 # For visualization
 matplotlib
